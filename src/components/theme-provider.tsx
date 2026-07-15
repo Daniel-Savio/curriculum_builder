@@ -2,7 +2,7 @@
 import * as React from "react"
 
 type Theme = "dark" | "light" | "system"
-type ResolvedTheme = "dark" | "light"
+type ResolvedTheme = "light" | "dark"
 
 type ThemeProviderProps = {
   children: React.ReactNode
@@ -16,7 +16,7 @@ type ThemeProviderState = {
   setTheme: (theme: Theme) => void
 }
 
-const COLOR_SCHEME_QUERY = "(prefers-color-scheme: dark)"
+const COLOR_SCHEME_QUERY = "(prefers-color-scheme: light)"
 const THEME_VALUES: Theme[] = ["dark", "light", "system"]
 
 const ThemeProviderContext = React.createContext<
@@ -145,7 +145,7 @@ export function ThemeProvider({
         return
       }
 
-      if (event.metaKey || event.ctrlKey || event.altKey) {
+      if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) {
         return
       }
 
