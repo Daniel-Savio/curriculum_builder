@@ -12,14 +12,27 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import type { ResumeFormData } from "@/lib/resume-schema";
 
-export function StepExperienceDescriptions() {
+export function StepEducationDescriptions() {
   const { control, register } = useFormContext<ResumeFormData>();
-  const { fields } = useFieldArray({ control, name: "experiences" });
+
+  // Precisamos dos dois: `fields` do useFieldArray pra ter uma key estável
+  // por item, e `useWatch` pra ler courseType de cada um e poder filtrar.
+  const { fields } = useFieldArray({ control, name: "educations" });
+  const educations = useWatch({ control, name: "educations" }) ?? [];
+
+  // Só "Curso" tem campo de descrição — as demais formações já têm todo o
+  // contexto (instituição, área, período) no card de cadastro, sem precisar
+  // de texto livre. courseIndexes guarda a posição REAL no array de
+  // educations, pra continuar registrando o campo certo no RHF.
+  const courseIndexes = educations
+    .map((education, i) => (education.courseType === "Curso" ? i : null))
+    .filter((i): i is number => i !== null);
 
   const [carouselIndex, setCarouselIndex] = useState(0);
-  const total = fields.length;
+  const total = courseIndexes.length;
   const isFirst = carouselIndex === 0;
   const isLast = carouselIndex === total - 1;
+  const currentEducationIndex = courseIndexes[carouselIndex];
 
   function goPrev() {
     setCarouselIndex((i) => Math.max(0, i - 1));
@@ -29,7 +42,6 @@ export function StepExperienceDescriptions() {
     setCarouselIndex((i) => Math.min(total - 1, i + 1));
   }
 
-  // Distância ou velocidade mínima pro gesto fazer valer o swipe, em vez de um toque acidental que arrastou um pouco.
   const SWIPE_DISTANCE_THRESHOLD = 60;
   const SWIPE_VELOCITY_THRESHOLD = 400;
 
@@ -48,7 +60,8 @@ export function StepExperienceDescriptions() {
   if (total === 0) {
     return (
       <p className="text-zinc-600">
-        Nenhuma experiência foi adicionada na etapa anterior.
+        Nenhum curso avulso foi adicionado — só cursos têm campo de descrição
+        aqui. Você pode seguir pra próxima etapa.
       </p>
     );
   }
@@ -57,7 +70,7 @@ export function StepExperienceDescriptions() {
     <div className="flex flex-col gap-4">
       <AnimatePresence mode="wait">
         <motion.div
-          key={fields[carouselIndex]?.id ?? carouselIndex}
+          key={fields[currentEducationIndex]?.id ?? currentEducationIndex}
           drag={total > 1 ? "x" : false}
           dragConstraints={{ left: 0, right: 0 }}
           dragElastic={0.7}
@@ -68,8 +81,8 @@ export function StepExperienceDescriptions() {
           exit={{ opacity: 0, x: -24 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
         >
-          <ExperienceDescriptionCard
-            index={carouselIndex}
+          <EducationDescriptionCard
+            index={currentEducationIndex}
             control={control}
             register={register}
           />
@@ -88,14 +101,13 @@ export function StepExperienceDescriptions() {
           Anterior
         </Button>
 
-        {/* Indicadores tipo carrossel — clicáveis, pra pular direto */}
         <div className="flex items-center gap-1.5">
-          {fields.map((field, i) => (
+          {courseIndexes.map((educationIndex, i) => (
             <button
-              key={field.id}
+              key={fields[educationIndex]?.id ?? educationIndex}
               type="button"
               onClick={() => setCarouselIndex(i)}
-              aria-label={`Ir para a experiência ${i + 1}`}
+              aria-label={`Ir para o curso ${i + 1}`}
               aria-current={i === carouselIndex}
               className={[
                 "h-2 rounded-full transition-all",
@@ -120,49 +132,45 @@ export function StepExperienceDescriptions() {
   );
 }
 
-type ExperienceDescriptionCardProps = {
+type EducationDescriptionCardProps = {
   index: number;
   control: Control<ResumeFormData>;
   register: ReturnType<typeof useFormContext<ResumeFormData>>["register"];
 };
 
-function ExperienceDescriptionCard({
+function EducationDescriptionCard({
   index,
   control,
   register,
-}: ExperienceDescriptionCardProps) {
-  // Título de cada atividade
-  const company = useWatch({ control, name: `experiences.${index}.company` });
-  const position = useWatch({ control, name: `experiences.${index}.position` });
-  const startDate = useWatch({ control, name: `experiences.${index}.startDate` });
-  const endDate = useWatch({ control, name: `experiences.${index}.endDate` });
-  const isCurrent = useWatch({ control, name: `experiences.${index}.isCurrent` });
+}: EducationDescriptionCardProps) {
+  // Chegando aqui, a entrada já é garantidamente do tipo "Curso" (é o
+  // próprio filtro do componente pai que decide o que entra no carrossel),
+  // então o card não precisa mais lidar com os outros formatos de período.
+  const institution = useWatch({ control, name: `educations.${index}.institution` });
+  const area = useWatch({ control, name: `educations.${index}.area` });
+  const courseHours = useWatch({ control, name: `educations.${index}.courseHours` });
 
-  const period = isCurrent
-    ? `${startDate || "?"} — atual`
-    : `${startDate || "?"} — ${endDate || "?"}`;
+  const title = area || "Curso";
+  const subtitle = [institution || "Instituição não informada", `${courseHours || "?"}h`]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <div className="rounded-xl border border-border bg-muted/40 p-4 sm:p-6 flex flex-col gap-4">
       <div>
-        <h3 className="text-lg font-bold text-zinc-800">
-          {position || "Cargo não informado"}
-        </h3>
-        <p className="text-sm text-zinc-500">
-          {company || "Empresa não informada"} · {period}
-        </p>
+        <h3 className="text-lg font-bold text-zinc-800">{title}</h3>
+        <p className="text-sm text-zinc-500">{subtitle}</p>
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor={`experiences.${index}.description`}>
-          Descreva suas principais atividades
+        <Label htmlFor={`educations.${index}.description`}>
+          Descreva o que você aprendeu ou desenvolveu
         </Label>
         <Textarea
-          id={`experiences.${index}.description`}
-          {...register(`experiences.${index}.description`)}
-          placeholder="Conte o que você fazia no dia a dia, responsabilidades e resultados alcançados..."
+          id={`educations.${index}.description`}
+          {...register(`educations.${index}.description`)}
+          placeholder="Conte sobre projetos, disciplinas relevantes ou o foco desse curso..."
           rows={10}
-          // Impede que um toque iniciado dentro da textarea seja pego pelo input
           onPointerDownCapture={(e) => e.stopPropagation()}
         />
       </div>

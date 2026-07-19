@@ -4,10 +4,10 @@ import { ScrollArea } from "./components/ui/scroll-area";
 
 export function App() {
   return (
-    <div className="max-h-svh bg-background">
+    <div className="bg-background bg-cover bg-no-repeat bg-[url('/random-bg-2.png')]">
       <Header />
       <ScrollArea>
-        <main className="px-4 py-6 flex flex-col h-svh items-center gap-10 bg-[url('/random-bg-2.png')]">
+        <main className="px-4 py-6 flex flex-col h-svh items-center gap-10 ">
           <section className="w-full max-w-3xl text-center flex flex-col gap-2">
             <h1 className="text-4xl sm:text-5xl font-bold text-zinc-800 leading-tight">
               Crie seu{" "}

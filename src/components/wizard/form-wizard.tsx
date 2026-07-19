@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { StepIndicator } from "./step-indicator";
 import {
   createEmptyExperience,
+  createEmptyEducation,
   resumeSchema,
   type ResumeFormData,
 } from "@/lib/resume-schema";
@@ -13,6 +14,8 @@ import { StepPersonalInfo } from "./steps/step-personal-info";
 import { StepContact } from "./steps/step-contact";
 import { StepExperience } from "./steps/step-experience";
 import { StepExperienceDescriptions } from "./steps/step-experience-description";
+import { StepEducation } from "./steps/step-education";
+import { StepEducationDescriptions } from "./steps/step-education-description";
 
 type Step = {
   id: string;
@@ -49,9 +52,23 @@ const steps: Step[] = [
   {
     id: "experience-details",
     title: "Detalhe cada experiência",
-    description: "Passe por cada uma e descreva o que você fazia. Não é obrigatório mas com certeza é um passo importante. Explique um pouco sobre o que se tratava seu trabalho",
+    description: "Passe por cada uma e descreva o que você fazia.",
     fields: ["experiences"],
     Component: StepExperienceDescriptions,
+  },
+  {
+    id: "education",
+    title: "Sua formação",
+    description: "Conte sobre escolas, cursos e faculdades.",
+    fields: ["educations"],
+    Component: StepEducation,
+  },
+  {
+    id: "education-details",
+    title: "Detalhe cada formação",
+    description: "Passe por cada uma e descreva o que você aprendeu.",
+    fields: ["educations"],
+    Component: StepEducationDescriptions,
   },
 ];
 
@@ -69,6 +86,7 @@ export function FormWizard() {
       email: "",
       phone: "",
       experiences: [createEmptyExperience()],
+      educations: [createEmptyEducation()],
     },
   });
 
