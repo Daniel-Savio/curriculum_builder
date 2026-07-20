@@ -28,7 +28,7 @@ export const contactSchema = z.object({
 export const experienceEntrySchema = z
   .object({
     company: z.string().min(2, "Qual a empresa?"),
-    company_city: z.string().min(2, "Qual a cidade?").optional(),
+    company_city: z.string().optional(),
     position: z.string().min(2, "Qual o cargo?"),
     description: z.string().optional(),
     startDate: z
@@ -53,7 +53,13 @@ export const experienceEntrySchema = z
   .refine((entry) => entry.isCurrent || !!entry.endDate, {
     message: "Qual a data que parou de atuar nessa experiência ou marque como sendo o emprego atual?",
     path: ["endDate"],
-  });
+  })
+  .refine(
+    (entry) =>
+      !!entry.isSelfJob ||
+      !!entry.company_city,
+    { message: "Por favor, em qual cidade você trabalhava?", path: ["company_city"] },
+  )
 
 export const experienceSchema = z.object({
   experiences: z
@@ -77,7 +83,7 @@ export function createEmptyExperience(): ExperienceEntry {
   };
 }
 
-// Opções do select de tipo de formação. Exportado pra usar direto no <Select>.
+// Opções do select de tipo de formação.
 export const COURSE_TYPES = [
   "Ensino Fundamental",
   "Ensino Médio",
@@ -88,11 +94,9 @@ export const COURSE_TYPES = [
   "Curso",
 ] as const;
 
-// Nesses dois tipos, não faz sentido pedir "área ou curso" — o campo some da UI
-// e o schema para de exigi-lo.
+// Nesses dois tipos, não faz sentido pedir "área ou curso"
 export const COURSE_TYPES_WITHOUT_AREA = ["Ensino Fundamental", "Ensino Médio"] as const;
-// Regra especial: quando courseType é "Curso", o período (início/término)
-// vira carga horária — os dois formatos nunca coexistem na mesma entrada.
+// Regra especial: quando courseType é "Curso", o período (início/término) vira carga horária — os dois formatos nunca coexistem na mesma entrada.
 export const educationEntrySchema = z
   .object({
     institution: z.string().min(2, "Qual a instituição de ensino?"),
@@ -166,7 +170,8 @@ export const educationEntrySchema = z
       message: `O ano não pode ser maior que ${currentYear}`,
       path: ["endDate"],
     },
-  );
+  )
+  .optional();
 
 export const educationSchema = z.object({
   educations: z

@@ -11,21 +11,19 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import type { ResumeFormData } from "@/lib/resume-schema";
+import { InfoIcon } from "@phosphor-icons/react/dist/ssr";
+import { Kbd } from "@/components/ui/kbd";
 
 export function StepEducationDescriptions() {
   const { control, register } = useFormContext<ResumeFormData>();
 
-  // Precisamos dos dois: `fields` do useFieldArray pra ter uma key estável
-  // por item, e `useWatch` pra ler courseType de cada um e poder filtrar.
+  //Os dois: `fields` do useFieldArray servem pra ter uma key estável
   const { fields } = useFieldArray({ control, name: "educations" });
   const educations = useWatch({ control, name: "educations" }) ?? [];
 
-  // Só "Curso" tem campo de descrição — as demais formações já têm todo o
-  // contexto (instituição, área, período) no card de cadastro, sem precisar
-  // de texto livre. courseIndexes guarda a posição REAL no array de
-  // educations, pra continuar registrando o campo certo no RHF.
+  // Só "Curso" tem campo de descrição
   const courseIndexes = educations
-    .map((education, i) => (education.courseType === "Curso" ? i : null))
+    .map((education, i) => (education!.courseType === "Curso" ? i : null))
     .filter((i): i is number => i !== null);
 
   const [carouselIndex, setCarouselIndex] = useState(0);
@@ -59,10 +57,10 @@ export function StepEducationDescriptions() {
 
   if (total === 0) {
     return (
-      <p className="text-zinc-600">
-        Nenhum curso avulso foi adicionado — só cursos têm campo de descrição
-        aqui. Você pode seguir pra próxima etapa.
-      </p>
+      <div className="bg-zinc-200 p-2 rounded-md flex gap-2 items-center">
+        <InfoIcon className="text-primary size-8"></InfoIcon>
+        <p className="text-zinc-600">Se não há nenhum item do tipo <Kbd className="text-md text-p-cyan-500">Curso</Kbd> adicionado, você pode seguir pra próxima etapa.</p>
+      </div>
     );
   }
 
@@ -163,6 +161,7 @@ function EducationDescriptionCard({
       </div>
 
       <div className="flex flex-col gap-1.5">
+
         <Label htmlFor={`educations.${index}.description`}>
           Descreva o que você aprendeu ou desenvolveu
         </Label>

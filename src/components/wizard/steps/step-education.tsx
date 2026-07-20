@@ -244,9 +244,7 @@ function EducationEntryFields({
       shouldDirty: true,
     });
 
-    // Os dois formatos (período x carga horária) são mutuamente exclusivos —
-    // trocar de tipo limpa o que não se aplica mais, pra não sobrar lixo
-    // de um formato antigo escondido no valor do form.
+    // Escrevendo pq sou macaco: Os dois formatos (período x carga horária) são mutuamente exclusivos — trocar de tipo limpa o que não se aplica mais, pra não sobrar lixo
     if (value === "Curso") {
       setValue(`educations.${index}.startDate`, "", { shouldDirty: true });
       setValue(`educations.${index}.endDate`, "", { shouldDirty: true });
@@ -264,11 +262,14 @@ function EducationEntryFields({
   }
 
   return (
-    <div className="rounded-xl border border-border bg-muted/40 p-4 flex flex-col gap-4">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex justify-between w-full font-bold items-center text-md text-zinc-500">
+    <div className="rounded-xl relative border border-border bg-muted/40 p-4 flex flex-col gap-4">
+      <span className="absolute flex -top-3 -right-2 p-2 size-6 text-center items-center rounded-full  bg-primary  text-zinc-50">
+        {index + 1}
+      </span>
+      <div className="flex items-start justify-between relative gap-2">
+        <div className="flex  justify-between w-full font-bold items-center text-md text-zinc-500">
           <h3 className="bg-primary-gradient bg-clip-text text-transparent">
-            {institution ? institution : "Formação"} - {index + 1}
+            {institution ? institution : "Formação"}
           </h3>
           {canRemove && (
             <Button
@@ -288,8 +289,9 @@ function EducationEntryFields({
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor={`educations.${index}.courseType`}>Tipo de formação</Label>
-        <Select value={courseType} onValueChange={handleCourseTypeChange}>
+        <Select value={courseType}  onValueChange={handleCourseTypeChange}>
           <SelectTrigger
+            className={"w-full"}
             id={`educations.${index}.courseType`}
             onPointerDownCapture={stopSwipe}
           >

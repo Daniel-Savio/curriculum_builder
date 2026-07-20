@@ -229,16 +229,18 @@ function ExperienceEntryFields({
   const startDateField = register(`experiences.${index}.startDate`);
   const endDateField = register(`experiences.${index}.endDate`);
 
-  // Usado em todo campo interativo do card, pra um toque que começa em cima
-  // de um input/switch/botão nunca seja interpretado como início de swipe.
+  // Evita que um toque que começa em cima de um input/switch/botão seja interpretado como início de swipe.
   const stopSwipe = (e: React.PointerEvent) => e.stopPropagation();
 
   return (
-    <div className="rounded-xl border border-border bg-muted/40 p-4 flex flex-col gap-4">
+    <div className="rounded-xl relative border border-border bg-muted/40 p-4 flex flex-col gap-4">
+      <span className="absolute flex -top-3 p-2 size-6 text-center items-center rounded-full -right-1 bg-primary  text-zinc-50">
+        {index + 1}
+      </span>
       <div className="flex items-start justify-between gap-2">
-        <div className="flex justify-between w-full font-bold items-center text-md text-zinc-500">
-          <h3 className="bg-primary-gradient bg-clip-text text-transparent">
-            {company ? company : "Experiência"} - {index + 1}
+        <div className="flex justify-between w-full font-bold items-center text-lg text-zinc-500">
+          <h3 className="bg-primary-gradient bg-clip-text text-transparent ">
+            {company ? company : "Experiência"}
           </h3>
           {canRemove && (
             <Button

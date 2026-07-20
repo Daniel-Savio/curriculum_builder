@@ -7,7 +7,6 @@ import {
 } from "react-hook-form";
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import type { ResumeFormData } from "@/lib/resume-schema";
@@ -139,31 +138,29 @@ function ExperienceDescriptionCard({
   const isCurrent = useWatch({ control, name: `experiences.${index}.isCurrent` });
 
   const period = isCurrent
-    ? `${startDate || "?"} — atual`
+    ? `${startDate || "?"} — atualmente`
     : `${startDate || "?"} — ${endDate || "?"}`;
 
   return (
     <div className="rounded-xl border border-border bg-muted/40 p-4 sm:p-6 flex flex-col gap-4">
       <div>
         <h3 className="text-lg font-bold text-zinc-800">
-          {position || "Cargo não informado"}
+          {company || "Empresa não informada"} em {period}
         </h3>
         <p className="text-sm text-zinc-500">
-          {company || "Empresa não informada"} · {period}
+          {position || ""}
         </p>
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor={`experiences.${index}.description`}>
-          Descreva suas principais atividades
-        </Label>
+
         <Textarea
+
           id={`experiences.${index}.description`}
           {...register(`experiences.${index}.description`)}
-          placeholder="Conte o que você fazia no dia a dia, responsabilidades e resultados alcançados..."
-          rows={10}
-          // Impede que um toque iniciado dentro da textarea seja pego pelo input
+          placeholder="Conte aqui o que você fazia no dia a dia, tarefas, projetos, trabalhos, responsabilidades e resultados alcançados..."
           onPointerDownCapture={(e) => e.stopPropagation()}
+          rows={10}
         />
       </div>
     </div>
