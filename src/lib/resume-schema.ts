@@ -1,7 +1,6 @@
 import { z } from "zod";
 
-// Cada schema representa os campos de UMA etapa.
-// Isso permite validar só a etapa atual (não o form inteiro) ao clicar em "Próximo".
+// Cada schema representa os campos de UMA etapa. Isso permite validar só a etapa atual (não o form inteiro) ao clicar em "Próximo".
 
 const currentYear = new Date().getFullYear();
 
@@ -23,8 +22,7 @@ export const contactSchema = z.object({
     .regex(/^\(\d{2}\)9\d{4}-\d{4}$/, "Telefone inválido. Use o formato (11)91234-5678"),
 });
 
-// Uma entrada individual de experiência.
-// O .refine garante: OU tem data de término, OU está marcada como emprego atual.
+// Uma entrada individual de experiência. O .refine garante: OU tem data de término, OU está marcada como emprego atual.
 export const experienceEntrySchema = z
   .object({
     company: z.string().min(2, "Qual a empresa?"),
@@ -96,7 +94,7 @@ export const COURSE_TYPES = [
 
 // Nesses dois tipos, não faz sentido pedir "área ou curso"
 export const COURSE_TYPES_WITHOUT_AREA = ["Ensino Fundamental", "Ensino Médio"] as const;
-// Regra especial: quando courseType é "Curso", o período (início/término) vira carga horária — os dois formatos nunca coexistem na mesma entrada.
+
 export const educationEntrySchema = z
   .object({
     institution: z.string().min(2, "Qual a instituição de ensino?"),
@@ -175,8 +173,16 @@ export const educationEntrySchema = z
 
 export const educationSchema = z.object({
   educations: z
-    .array(educationEntrySchema)
-    .min(1, "Adicione ao menos uma formação"),
+    .array(educationEntrySchema).optional(),
+});
+
+export const skillEntrySchema = z.object({
+  name: z.string().min(1, "Qual o nome da habilidade?"),
+  description: z.string(),
+});
+
+export const skillsSchema = z.object({
+  skills: z.array(skillEntrySchema).optional(),
 });
 
 export type EducationEntry = z.infer<typeof educationEntrySchema>;
@@ -200,6 +206,8 @@ export function createEmptyEducation(): EducationEntry {
 export const resumeSchema = personalInfoSchema
   .merge(contactSchema)
   .merge(experienceSchema)
-  .merge(educationSchema);
+  .merge(educationSchema)
+  .merge(skillsSchema);
+
 
 export type ResumeFormData = z.infer<typeof resumeSchema>;

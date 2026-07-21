@@ -15,10 +15,11 @@ import { StepContact } from "./steps/step-contact";
 import { StepExperience } from "./steps/step-experience";
 import { StepEducation } from "./steps/step-education";
 import { StepEducationDescriptions } from "./steps/step-education-description";
-import { GraduationCapIcon } from "@phosphor-icons/react";
+import { GraduationCapIcon, ToolboxIcon } from "@phosphor-icons/react";
 import { SuitcaseIcon } from "@phosphor-icons/react/dist/ssr";
 import { StepExperienceDescriptions } from "./steps/step-experience-description";
 import { StepIntro } from "./steps/step-intro";
+import { StepSkills } from "./steps/step-skills";
 
 type Step = {
   id: string;
@@ -90,7 +91,7 @@ export function FormWizard() {
         <StepIntro
           icon={<GraduationCapIcon size={28} weight="bold" />}
           points={[]}
-          cta={{ label: "Pular esta etapa", onClick: () => setStepIndex(stepIndex + 1) }}
+          cta={{ label: "Pular esta etapa", onClick: () => setStepIndex(8) }}
         />
       ),
     },
@@ -110,18 +111,25 @@ export function FormWizard() {
     },
     // Skills Steps
     {
-      id: "skills",
+      id: "skills-intro",
       title: "Habilidades",
-      description: "Aqui você vai colocas suas habilidades, competências, experiências com tarefas e projetos que você se considera bom! Caso não queira preencher, fica tranquilo, pode pular esta etapa!",
+      description: "Use essa área para enumerar suas habilidades, competências, experiências com tarefas e projetos que você se considera bom! Caso não queira preencher, fica tranquilo, pode pular esta etapa!",
       fields: [],
       Component: () => (
         <StepIntro
-          icon={<GraduationCapIcon size={28} weight="bold" />}
+          icon={<ToolboxIcon size={28} weight="bold" />}
           points={["Idiomas", "Ferramentas que sabe usar", "Experiências", "Softwares que sabe usar"]}
-          cta={{ label: "Pular esta etapa", onClick: () => setStepIndex(stepIndex + 2) }}
+          cta={{ label: "Pular esta etapa", onClick: () => setStepIndex(10) }}
         />
       ),
     },
+    {
+      id: "skills",
+      title: "Habilidades",
+      description: "Aqui pode colocar desde máquinas que sabe operar, serviços que consegue prestar, idiomas que sabe falar e softwares que sabe usar, etc",
+      fields: ["skills"],
+      Component: StepSkills,
+    }
   ];
 
   const methods = useForm<ResumeFormData>({
@@ -174,7 +182,7 @@ export function FormWizard() {
   }
 
   async function handleStepByIndex(targetIndex: number) {
-    if (targetIndex === stepIndex) return;
+
 
     // Voltar é sempre livre — não tem risco de pular validação.
     if (targetIndex < stepIndex) {
@@ -184,8 +192,8 @@ export function FormWizard() {
 
     // Avançar clicando no indicador precisa da mesma validação do botão
     // "Próximo", senão dá pra pular uma etapa com campo obrigatório vazio.
-    const isStepValid = await methods.trigger(currentStep.fields);
-    if (!isStepValid) return;
+    // const isStepValid = await methods.trigger(currentStep.fields);
+    // if (!isStepValid) return;
 
     setStepIndex(targetIndex);
   }
