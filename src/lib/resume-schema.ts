@@ -177,8 +177,8 @@ export const educationSchema = z.object({
 });
 
 export const skillEntrySchema = z.object({
-  name: z.string().min(1, "Qual o nome da habilidade?"),
-  description: z.string(),
+  name: z.string().min(4, "Preencha sua habilidade com um texto válido"),
+  description: z.string().min(8, "Descreva um pouco mais sua habilidade"),
 });
 
 export const skillsSchema = z.object({

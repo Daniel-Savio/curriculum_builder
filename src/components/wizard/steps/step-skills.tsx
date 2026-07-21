@@ -5,8 +5,6 @@ import {
 } from "react-hook-form";
 import {
   PlusIcon,
-  CopyIcon,
-  MinusIcon,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 
@@ -96,37 +94,70 @@ type SkillEntryProps = {
 
 function SkillEntry({
   index,
-  control,
   register,
   errors,
   onRemove,
 }: SkillEntryProps) {
-  return (
+  // Extract specific errors for this index to keep the JSX clean
+  const nameError = errors.skills?.[index]?.name;
+  const descriptionError = errors.skills?.[index]?.description;
 
+  return (
     <motion.div
       initial={{  y: -20 }}
       animate={{ y: 0 }}
       exit={{
         opacity: 0,
         x: -40,
-        // This transition overrides the default one just for the exit animation
         transition: { duration: 0.2, ease: "linear" }
       }}
-
       transition={{ duration: 0.35, ease: "easeOut" }}
-      className="flex flex-1 "
+      className="flex flex-1 flex-col mb-4"
     >
-      <div className="flex w-full flex-col">
-        <InputGroup className="border-b-0 rounded-b-none rounded-tr-none ">
-          <InputGroupAddon className="bg-gray-100 px-2 w-25" align={"inline-start"} > Título/Nome </InputGroupAddon>
-          <InputGroupInput {...register(`skills.${index}.name`)} placeholder="Serraria" />
-        </InputGroup>
-        <InputGroup className="border-t-0 rounded-t-none rounded-br-none">
-          <InputGroupAddon className="bg-gray-100 px-2  w-25" align={"inline-start"} > Descrição</InputGroupAddon>
-          <InputGroupInput {...register(`skills.${index}.description`)} placeholder="Montar moveis, armeários e afins" />
+      <div className="flex w-full">
+        <div className="flex w-full flex-col">
+          <InputGroup className="border-b-0 rounded-b-none rounded-tr-none">
+            <InputGroupAddon className="bg-gray-100 px-2 w-25" align={"inline-start"}>
+              Título/Nome
+            </InputGroupAddon>
+            <InputGroupInput
+              {...register(`skills.${index}.name`)}
+              placeholder="Serraria"
+            />
           </InputGroup>
+
+          <InputGroup className="border-t-0 rounded-t-none rounded-br-none">
+            <InputGroupAddon className="bg-gray-100 px-2 w-25" align={"inline-start"}>
+              Descrição
+            </InputGroupAddon>
+            <InputGroupInput
+              {...register(`skills.${index}.description`)}
+              placeholder="Montar moveis, armários e afins"
+            />
+          </InputGroup>
+        </div>
+
+        <div
+          onClick={() => onRemove(index)}
+          className="bg-red-400 cursor-pointer flex px-2 items-center justify-center rounded-br rounded-tr"
+        >
+          <TrashIcon size={18} />
+        </div>
       </div>
-      <div onClick={() => onRemove(index)} className="bg-red-400 cursor-pointer flex px-2 items-center justify-center rounded-br rounded-tr"><TrashIcon size={18}  /></div>
+
+      {/* Error Message Display Container */}
+      <div className="flex flex-col mt-1 px-2">
+        {nameError && (
+          <span className="text-sm text-red-500">
+            {nameError.message}
+          </span>
+        )}
+        {descriptionError && (
+          <span className="text-sm text-red-500">
+            {descriptionError.message}
+          </span>
+        )}
+      </div>
     </motion.div>
   );
 }
