@@ -15,7 +15,7 @@ import { StepContact } from "./steps/step-contact";
 import { StepExperience } from "./steps/step-experience";
 import { StepEducation } from "./steps/step-education";
 import { StepEducationDescriptions } from "./steps/step-education-description";
-import { GraduationCapIcon, ToolboxIcon } from "@phosphor-icons/react";
+import { GraduationCapIcon, ToolboxIcon, UserIcon } from "@phosphor-icons/react";
 import { SuitcaseIcon } from "@phosphor-icons/react/dist/ssr";
 import { StepExperienceDescriptions } from "./steps/step-experience-description";
 import { StepIntro } from "./steps/step-intro";
@@ -36,12 +36,29 @@ export function FormWizard() {
   const [stepIndex, setStepIndex] = useState(0);
 
   const steps: Step[] = [
+  // Personal Steps
+    {
+      id: "intro-personal",
+      title: "Informações individuais",
+      description:
+        "Coloque algumas informações sobre vocês para que os empregadores possam entrar em contato diretamente contigo!",
+      fields: [],
+      showInIndicator: true,
+      Component: () => (
+        <StepIntro
+          icon={<UserIcon size={28} weight="bold" />}
+          points={["Seu nome", "Objetivo ou cargo que deseja", "INformações para contato"]}
+
+        />
+      ),
+    },
     {
       id: "personal",
       title: "Sobre você",
       description: "Vamos começar com o básico.",
       fields: ["fullName", "role"],
       Component: StepPersonalInfo,
+      showInIndicator: false,
     },
     {
       id: "contact",
@@ -49,6 +66,7 @@ export function FormWizard() {
       description: "Assim os empregadores conseguem entrar em contato.",
       fields: ["email", "phone"],
       Component: StepContact,
+      showInIndicator: false,
     },
     // Experience Steps
     {
@@ -57,7 +75,7 @@ export function FormWizard() {
       description:
         "Conta para gente no que já trabalhou, seja por conta ou em alguma empresa.Sua experiência de trabalho é sempre bem vinda",
       fields: [],
-      showInIndicator: false,
+      showInIndicator: true,
       Component: () => (
         <StepIntro
           icon={<SuitcaseIcon size={28} weight="bold" />}
@@ -72,6 +90,7 @@ export function FormWizard() {
       description: "Uma DICA, comece do mais recente para o mais antigo.",
       fields: ["experiences"],
       Component: StepExperience,
+      showInIndicator: false,
     },
     {
       id: "experience-details",
@@ -79,6 +98,7 @@ export function FormWizard() {
       description: "Passe por cada uma e descreva o que você fazia.",
       fields: ["experiences"],
       Component: StepExperienceDescriptions,
+      showInIndicator: false,
     },
     // Education Steps
     {
@@ -86,7 +106,7 @@ export function FormWizard() {
       title: "Formação acadêmica",
       description: "Agora, conta pra gente sobre sua formação escolar e acadêmica ou até mesmo um curso que tenha feito. Se não tiver, fica tranquilo, não precisa preencher.",
       fields: [],
-      showInIndicator: false,
+      showInIndicator: true,
       Component: () => (
         <StepIntro
           icon={<GraduationCapIcon size={28} weight="bold" />}
@@ -101,6 +121,7 @@ export function FormWizard() {
       description: "Conte sobre escolas, cursos e faculdades.",
       fields: ["educations"],
       Component: StepEducation,
+      showInIndicator: false,
     },
     {
       id: "education-details",
@@ -108,6 +129,7 @@ export function FormWizard() {
       description: "Passe por cada uma e descreva o que você aprendeu.",
       fields: ["educations"],
       Component: StepEducationDescriptions,
+      showInIndicator: false,
     },
     // Skills Steps
     {
@@ -115,6 +137,7 @@ export function FormWizard() {
       title: "Habilidades",
       description: "Use essa área para enumerar suas habilidades, competências, experiências com tarefas e projetos que você se considera bom! Caso não queira preencher, fica tranquilo, pode pular esta etapa!",
       fields: [],
+      showInIndicator: true,
       Component: () => (
         <StepIntro
           icon={<ToolboxIcon size={28} weight="bold" />}
@@ -129,6 +152,7 @@ export function FormWizard() {
       description: "Aqui pode colocar desde máquinas que sabe operar, serviços que consegue prestar, idiomas que sabe falar e softwares que sabe usar, etc",
       fields: ["skills"],
       Component: StepSkills,
+      showInIndicator: false,
     }
   ];
 
