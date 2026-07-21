@@ -176,18 +176,20 @@ export function FormWizard() {
   const isLastStep = stepIndex === steps.length - 1;
   const StepComponent = currentStep.Component;
 
-  // Posições, dentro do array COMPLETO de steps, de tudo que conta no indicador.
-  const indicatorStepIndices = steps
-    .map((step, i) => (step.showInIndicator === false ? null : i))
-    .filter((i): i is number => i !== null);
-
-  // Enquanto estiver numa etapa de introdução, o indicador mostra o dot da
-  // PRÓXIMA etapa "de verdade" — a introdução é tratada como parte dela.
-  const nearestCountedIndex =
-    indicatorStepIndices.find((i) => i >= stepIndex) ??
-    indicatorStepIndices[indicatorStepIndices.length - 1];
-  const indicatorCurrent = indicatorStepIndices.indexOf(nearestCountedIndex);
-  const indicatorTotal = indicatorStepIndices.length;
+  // Agrupa o array COMPLETO de steps em seções: cada step com
+  // showInIndicator !== false abre uma seção nova (vira um círculo
+  // numerado); todo step depois dele, até a próxima seção, entra como
+  // sub-etapa (vira um traço no trilho tracejado dessa seção).
+  const sections = steps.reduce<
+    { introIndex: number; subStepIndices: number[] }[]
+  >((acc, step, i) => {
+    if (step.showInIndicator !== false) {
+      acc.push({ introIndex: i, subStepIndices: [] });
+    } else if (acc.length > 0) {
+      acc[acc.length - 1].subStepIndices.push(i);
+    }
+    return acc;
+  }, []);
 
   async function handleNext() {
     // valida só os campos da etapa atual, não o form inteiro
@@ -234,11 +236,9 @@ export function FormWizard() {
         className="relative w-full max-w-2xl rounded-2xl border border-border bg-card shadow-md p-6 sm:p-8"
       >
         <StepIndicator
-          current={indicatorCurrent}
-          total={indicatorTotal}
-          setStepByIndex={(dotIndex) =>
-            handleStepByIndex(indicatorStepIndices[dotIndex])
-          }
+          sections={sections}
+          currentStepIndex={stepIndex}
+          onNavigate={handleStepByIndex}
         />
 
         <AnimatePresence mode="wait">
