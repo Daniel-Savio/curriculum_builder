@@ -1,3 +1,4 @@
+
 import { z } from "zod";
 
 // Cada schema representa os campos de UMA etapa. Isso permite validar só a etapa atual (não o form inteiro) ao clicar em "Próximo".
@@ -8,6 +9,7 @@ function isFourDigitYear(value: string) {
   return /^\d{4}$/.test(value);
 }
 
+// INDIVIDUAL
 export const personalInfoSchema = z.object({
   fullName: z.string().min(3, "Qual o seu nome completo?"),
   city: z.string().min(3, "Qual a cidade em que você mora autalmente?"),
@@ -22,6 +24,8 @@ export const contactSchema = z.object({
     .regex(/^\(\d{2}\)9\d{4}-\d{4}$/, "Telefone inválido. Use o formato (11)91234-5678"),
 });
 
+
+// EXPERIENCE
 // Uma entrada individual de experiência. O .refine garante: OU tem data de término, OU está marcada como emprego atual.
 export const experienceEntrySchema = z
   .object({
@@ -81,6 +85,7 @@ export function createEmptyExperience(): ExperienceEntry {
   };
 }
 
+// EDUCATION
 // Opções do select de tipo de formação.
 export const COURSE_TYPES = [
   "Ensino Fundamental",
@@ -176,15 +181,6 @@ export const educationSchema = z.object({
     .array(educationEntrySchema).optional(),
 });
 
-export const skillEntrySchema = z.object({
-  name: z.string().min(4, "Preencha sua habilidade com um texto válido"),
-  description: z.string().min(8, "Descreva um pouco mais sua habilidade"),
-});
-
-export const skillsSchema = z.object({
-  skills: z.array(skillEntrySchema).optional(),
-});
-
 export type EducationEntry = z.infer<typeof educationEntrySchema>;
 
 // Modelo em branco usado ao clicar em "Adicionar formação".
@@ -202,12 +198,127 @@ export function createEmptyEducation(): EducationEntry {
   };
 }
 
+
+// SKILL
+export const skillEntrySchema = z.object({
+  name: z.string().min(4, "Preencha sua habilidade com um texto válido"),
+  level: z.string().min(2, "Descreva um pouco mais sua habilidade"),
+});
+
+export const skillsSchema = z.object({
+  skills: z.array(skillEntrySchema).optional(),
+});
+
+//GENERAL INFO
+//informações gerais do currículo.
+export const generalInfoSchema = z.object({
+  generalDescription: z.string().min(10, "Descreva sua experiência num geral"),
+});
+
 // Schema completo, usado pelo resolver do useForm.
 export const resumeSchema = personalInfoSchema
   .merge(contactSchema)
   .merge(experienceSchema)
   .merge(educationSchema)
-  .merge(skillsSchema);
+  .merge(skillsSchema)
+  .merge(generalInfoSchema);
 
+
+export function createFilledResume(): ResumeFormData {
+  return {
+        // Personal Info & Contact
+        fullName: "João da Silva",
+        role: "Desenvolvedor Front-end",
+        city: "São Paulo",
+        birthDate: "15/05/1990",
+        email: "joao.silva@email.com",
+        phone: "(11)91234-5678", // Must match the regex: /^\(\d{2}\)9\d{4}-\d{4}$/
+
+        // General Description
+        generalDescription: "Profissional dedicado com mais de 5 anos de experiência na criação de interfaces responsivas e acessíveis. Apaixonado por tecnologia e resolução de problemas complexos.",
+
+        // Experience
+        experiences: [
+          {
+            company: "Tech Solutions S/A",
+            company_city: "São Paulo",
+            position: "Engenheiro de Software Sênior",
+            description: "Desenvolvimento e manutenção de aplicações web utilizando React e TypeScript. Mentoria de desenvolvedores juniores.",
+            startDate: "2020",
+            endDate: "2024",
+            isCurrent: false,
+            isSelfJob: false,
+          },
+          {
+            company: "Freelance",
+            company_city: "Remoto",
+            position: "Web Designer",
+            description: "Criação de landing pages e e-commerces para pequenos negócios locais.",
+            startDate: "2018",
+            endDate: "2020",
+            isCurrent: false,
+            isSelfJob: true,
+          }
+        ],
+
+        // Education
+        educations: [
+          {
+            institution: "Universidade de São Paulo",
+            institution_city: "São Paulo",
+            courseType: "Ensino Superior", // Must be a valid COURSE_TYPE
+            area: "Ciência da Computação",
+            description: "Bacharelado focado em engenharia de software e algoritmos.",
+            startDate: "2014",
+            endDate: "2018",
+            isCurrent: false,
+            courseHours: "",
+          },
+          {
+            institution: "Udemy",
+            institution_city: "Online",
+            courseType: "Curso",
+            area: "Desenvolvimento Web",
+            description: "Curso completo de React Hook Form e Zod.",
+            startDate: "2023",
+            endDate: "2023",
+            isCurrent: false,
+            courseHours: "40", // Required when courseType is "Curso"
+          }
+        ],
+
+        // Skills
+        skills: [
+          {
+            name: "React.js",
+            level: "Avançado",
+          },
+          {
+            name: "TypeScript",
+            level: "Intermediário",
+          },
+          {
+            name: "Inglês",
+            level: "Fluente",
+          }
+        ],
+      }
+}
+
+export function createEmptyResume(): ResumeFormData {
+  return {
+    // Personal Info & Contact
+    fullName: "",
+    role: "",
+    city: "",
+    birthDate: "",
+    email: "",
+    phone: "",
+    generalDescription: "",
+    experiences: [createEmptyExperience()],
+    educations: [createEmptyEducation()],
+    skills: [],
+  };
+}
 
 export type ResumeFormData = z.infer<typeof resumeSchema>;

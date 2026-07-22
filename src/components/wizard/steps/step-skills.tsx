@@ -1,17 +1,26 @@
 import {
   useFieldArray,
   useFormContext,
+  Controller,
   type Control,
 } from "react-hook-form";
-import {
-  PlusIcon,
-} from "@phosphor-icons/react";
+import { PlusIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
+import { TrashIcon } from "@phosphor-icons/react/dist/ssr";
+import { AnimatePresence, motion } from "framer-motion";
+
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"; // Ensure this matches your Shadcn UI path
 
 import type { ResumeFormData } from "@/lib/resume-schema";
-import { AnimatePresence, motion } from "framer-motion";
-import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
-import { TrashIcon } from "@phosphor-icons/react/dist/ssr";
 
 export function StepSkills() {
   const {
@@ -24,16 +33,17 @@ export function StepSkills() {
     control,
     name: "skills",
   });
+
   function handleAddSkill() {
-    append({ name: "", description: "" });
+    append({ name: "", level: "" });
   }
+
   function handleRemoveSkill(index: number) {
     remove(index);
   }
 
   return (
     <div className="flex flex-col gap-8">
-
       <motion.div
         initial={{ opacity: 0, x: 24 }}
         animate={{ opacity: 1, x: 0 }}
@@ -51,20 +61,20 @@ export function StepSkills() {
             <PlusIcon size={18} weight="bold" />
             Adicionar habilidade
           </Button>
-
         </div>
-        {/* AnimatePresence must wrap the mapped array so it can detect when a key is removed */}
+
         {fields.length === 0 && (
           <div className="">
             <SkillExemple />
           </div>
         )}
+
         <AnimatePresence initial={false}>
           {fields.map((field, index) => (
             <SkillEntry
               key={field.id}
               index={index}
-              control={control}
+              control={control} // Passed control here
               register={register}
               errors={errors}
               onRemove={handleRemoveSkill}
@@ -78,15 +88,13 @@ export function StepSkills() {
           {errors.experiences.root.message}
         </p>
       )}
-
-
     </div>
   );
 }
 
 type SkillEntryProps = {
   index: number;
-  control: Control<ResumeFormData>;
+  control: Control<ResumeFormData>; // Added control to the types
   register: ReturnType<typeof useFormContext<ResumeFormData>>["register"];
   errors: ReturnType<typeof useFormContext<ResumeFormData>>["formState"]["errors"];
   onRemove: (index: number) => void;
@@ -94,17 +102,17 @@ type SkillEntryProps = {
 
 function SkillEntry({
   index,
+  control,
   register,
   errors,
   onRemove,
 }: SkillEntryProps) {
-  // Extract specific errors for this index to keep the JSX clean
   const nameError = errors.skills?.[index]?.name;
-  const descriptionError = errors.skills?.[index]?.description;
+  const levelError = errors.skills?.[index]?.level;
 
   return (
     <motion.div
-      initial={{  y: -20 }}
+      initial={{ y: -20 }}
       animate={{ y: 0 }}
       exit={{
         opacity: 0,
@@ -122,17 +130,44 @@ function SkillEntry({
             </InputGroupAddon>
             <InputGroupInput
               {...register(`skills.${index}.name`)}
-              placeholder="Serraria"
+              placeholder="Ex: Espanhol"
             />
           </InputGroup>
 
           <InputGroup className="border-t-0 rounded-t-none rounded-br-none">
-            <InputGroupAddon className="bg-gray-100 px-2 w-25" align={"inline-start"}>
-              Descrição
+            <InputGroupAddon className="bg-gray-100 px-2 w-30" align={"inline-start"}>
+              Nível
             </InputGroupAddon>
-            <InputGroupInput
-              {...register(`skills.${index}.description`)}
-              placeholder="Montar moveis, armários e afins"
+            {/* Replaced standard input with Controller + Select */}
+            <Controller
+              control={control}
+              name={`skills.${index}.level`}
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <SelectTrigger className="w-full border-0 focus:ring-0 focus:ring-offset-0 rounded-none shadow-none bg-transparent">
+                    <SelectValue placeholder="Selecione o nível" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Geral</SelectLabel>
+                      <SelectItem value="Básico">Básico</SelectItem>
+                      <SelectItem value="Intermediário">Intermediário</SelectItem>
+                      <SelectItem value="Experiente">Experiente</SelectItem>
+                      <SelectItem value="Avançado">Avançado</SelectItem>
+                    </SelectGroup>
+                    <SelectGroup>
+                      <SelectLabel>Idiomas</SelectLabel>
+                      <SelectItem value="Nativo">Nativo</SelectItem>
+                      <SelectItem value="C1">C1</SelectItem>
+                      <SelectItem value="C2">C2</SelectItem>
+                      <SelectItem value="B1">B1</SelectItem>
+                      <SelectItem value="B2">B2</SelectItem>
+                      <SelectItem value="A1">A1</SelectItem>
+                      <SelectItem value="A2">A2</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              )}
             />
           </InputGroup>
         </div>
@@ -145,16 +180,15 @@ function SkillEntry({
         </div>
       </div>
 
-      {/* Error Message Display Container */}
       <div className="flex flex-col mt-1 px-2">
         {nameError && (
           <span className="text-sm text-red-500">
             {nameError.message}
           </span>
         )}
-        {descriptionError && (
+        {levelError && (
           <span className="text-sm text-red-500">
-            {descriptionError.message}
+            {levelError.message}
           </span>
         )}
       </div>
@@ -165,59 +199,75 @@ function SkillEntry({
 function SkillExemple() {
   return (
     <div className="space-y-2">
-      <h1 className=" px-2 text-muted-foreground/50 w-25">Exemplo</h1>
+      <h1 className="px-2 text-muted-foreground/50 w-25">Exemplo</h1>
       <motion.div
-        initial={{  y: -20 }}
+        initial={{ y: -20 }}
         animate={{ y: 0 }}
         exit={{
           opacity: 0,
           x: -40,
-          // This transition overrides the default one just for the exit animation
           transition: { duration: 0.2, ease: "linear" }
         }}
-
         transition={{ duration: 0.35, ease: "easeOut" }}
         className="flex flex-1 "
       >
         <div className="flex w-full flex-col">
-
           <InputGroup className="border-b-0 rounded-b-none rounded-tr-none ">
-            <InputGroupAddon className="bg-gray-100 px-2 text-muted-foreground/50 w-25" align={"inline-start"} > Título/Nome </InputGroupAddon>
-            <InputGroupInput disabled={true}  placeholder="Idiomas" />
+            <InputGroupAddon className="bg-gray-100 px-2 text-muted-foreground/50 w-25" align={"inline-start"}>
+              Título/Nome
+            </InputGroupAddon>
+            <InputGroupInput disabled={true} placeholder="Espanhol" />
           </InputGroup>
           <InputGroup className="border-t-0 rounded-t-none rounded-br-none">
-            <InputGroupAddon className="bg-gray-100 px-2 text-muted-foreground/50 w-25" align={"inline-start"} > Descrição</InputGroupAddon>
-            <InputGroupInput disabled={true} placeholder="Português: Nativo - Inglês: C2 - Espanhol: Iniciante" />
-            </InputGroup>
+            <InputGroupAddon className="bg-gray-100 px-2 text-muted-foreground/50 w-30" align={"inline-start"}>
+              Nível
+            </InputGroupAddon>
+            {/* Mocking the disabled select appearance for the example */}
+            <Select disabled>
+              <SelectTrigger className="w-full border-0 rounded-none shadow-none bg-transparent opacity-50">
+                <SelectValue placeholder="Nativo" />
+              </SelectTrigger>
+            </Select>
+          </InputGroup>
         </div>
-        <div className="bg-red-200 flex px-2 items-center justify-center rounded-br rounded-tr"><TrashIcon size={18} className="text-muted-foreground" /></div>
+        <div className="bg-red-200 flex px-2 items-center justify-center rounded-br rounded-tr">
+          <TrashIcon size={18} className="text-muted-foreground" />
+        </div>
       </motion.div>
       <hr />
-
       <motion.div
-        initial={{  y: -20 }}
+        initial={{ y: -20 }}
         animate={{ y: 0 }}
         exit={{
           opacity: 0,
           x: -40,
-          // This transition overrides the default one just for the exit animation
           transition: { duration: 0.2, ease: "linear" }
         }}
         transition={{ duration: 0.35, ease: "easeOut" }}
         className="flex flex-1 "
       >
         <div className="flex w-full flex-col">
-
           <InputGroup className="border-b-0 rounded-b-none rounded-tr-none ">
-            <InputGroupAddon className="bg-gray-100 px-2 text-muted-foreground/50 w-25" align={"inline-start"} > Título/Nome </InputGroupAddon>
-            <InputGroupInput disabled={true}  placeholder="Comunicação" />
+            <InputGroupAddon className="bg-gray-100 px-2 text-muted-foreground/50 w-25" align={"inline-start"}>
+              Título/Nome
+            </InputGroupAddon>
+            <InputGroupInput disabled={true} placeholder="Ca" />
           </InputGroup>
           <InputGroup className="border-t-0 rounded-t-none rounded-br-none">
-            <InputGroupAddon className="bg-gray-100 px-2 text-muted-foreground/50 w-25" align={"inline-start"} > Descrição</InputGroupAddon>
-            <InputGroupInput disabled={true} placeholder="Boa comunicação e extroversão para conversar com clientes" />
-            </InputGroup>
+            <InputGroupAddon className="bg-gray-100 px-2 text-muted-foreground/50 w-30" align={"inline-start"}>
+              Nível
+            </InputGroupAddon>
+            {/* Mocking the disabled select appearance for the example */}
+            <Select disabled>
+              <SelectTrigger className="w-full border-0 rounded-none shadow-none bg-transparent opacity-50">
+                <SelectValue placeholder="Nativo" />
+              </SelectTrigger>
+            </Select>
+          </InputGroup>
         </div>
-        <div className="bg-red-200 flex px-2 items-center justify-center rounded-br rounded-tr"><TrashIcon size={18} className="text-muted-foreground" /></div>
+        <div className="bg-red-200 flex px-2 items-center justify-center rounded-br rounded-tr">
+          <TrashIcon size={18} className="text-muted-foreground" />
+        </div>
       </motion.div>
     </div>
   );

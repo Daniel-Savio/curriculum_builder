@@ -20,7 +20,7 @@ export function StepPersonalInfo() {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="role">Cargo desejado</Label>
+        <Label htmlFor="role">Qual Cargo ou Objetivo você está procurando? </Label>
         <Input
           id="role"
           {...register("role")}
@@ -32,12 +32,12 @@ export function StepPersonalInfo() {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="city">Onde você mora atualmente?</Label>
+        <Label htmlFor="city">Em qual cidade você mora atualmente?</Label>
         <Input
           id="city"
           {...register("city")}
           placeholder="Ex: São Paulo"
-          value={"Piracaia"}
+          value={""}
         />
         {errors.city && (
           <p className="text-sm text-destructive">{errors.city.message}</p>

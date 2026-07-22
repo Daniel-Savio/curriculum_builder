@@ -5,8 +5,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { StepIndicator } from "./step-indicator";
 import {
-  createEmptyExperience,
-  createEmptyEducation,
+  createEmptyResume,
+  //createEmptyExperience,
+  //createEmptyEducation,
   resumeSchema,
   type ResumeFormData,
 } from "@/lib/resume-schema";
@@ -15,11 +16,15 @@ import { StepContact } from "./steps/step-contact";
 import { StepExperience } from "./steps/step-experience";
 import { StepEducation } from "./steps/step-education";
 import { StepEducationDescriptions } from "./steps/step-education-description";
-import { GraduationCapIcon, ToolboxIcon, UserIcon } from "@phosphor-icons/react";
+import { ArrowLeftIcon, ArticleMediumIcon, GraduationCapIcon, ToolboxIcon, UserIcon } from "@phosphor-icons/react";
 import { SuitcaseIcon } from "@phosphor-icons/react/dist/ssr";
 import { StepExperienceDescriptions } from "./steps/step-experience-description";
 import { StepIntro } from "./steps/step-intro";
 import { StepSkills } from "./steps/step-skills";
+import { StepGeneralDescription } from "./steps/step-general-description";
+import { pdf } from "@react-pdf/renderer";
+import { ResumePDF } from "@/pdf/pdf-resume";
+
 
 type Step = {
   id: string;
@@ -36,7 +41,6 @@ export function FormWizard() {
   const [stepIndex, setStepIndex] = useState(0);
 
   const steps: Step[] = [
-  // Personal Steps
     {
       id: "intro-personal",
       title: "Informações individuais",
@@ -153,22 +157,36 @@ export function FormWizard() {
       fields: ["skills"],
       Component: StepSkills,
       showInIndicator: false,
-    }
+    },
+    // General Description Step
+    {
+      id: "general-description",
+      title: "Descrição Geral",
+      description: "Agora que você já passou pela sua trajetória, escreva aqui uma descrição geral sobre você e sua experiência profissional, acadêmica e no que você se encaixa para .",
+      fields: ["generalDescription"],
+      Component: StepGeneralDescription,
+      showInIndicator: false,
+    },
+    {
+      id: "end",
+      title: "Concluir",
+      description: "Parabén, agora já temos o suficiente para gerar seu currículo!!!.",
+      fields: [],
+      showInIndicator: true,
+      Component: () => (
+        <StepIntro
+        icon={<ArticleMediumIcon size={32} weight="bold"/>}
+          points={[]}
+          cta={{ label: "Gerar currículo", onClick: () => handleNext() }}
+        />
+      ),
+    },
   ];
 
   const methods = useForm<ResumeFormData>({
     resolver: zodResolver(resumeSchema),
     mode: "onBlur",
-    defaultValues: {
-      fullName: "",
-      role: "",
-      city: "",
-      birthDate: "",
-      email: "",
-      phone: "",
-      experiences: [createEmptyExperience()],
-      educations: [createEmptyEducation()],
-    },
+    defaultValues: createEmptyResume(),
   });
 
   const currentStep = steps[stepIndex];
@@ -224,9 +242,34 @@ export function FormWizard() {
     setStepIndex(targetIndex);
   }
 
-  function onSubmit(data: ResumeFormData) {
+  async function onSubmit(data: ResumeFormData) {
     // aqui entra a montagem do PDF a partir dos dados já validados
-    console.log("Dados do currículo:", data);
+    try {
+      // 1. Generate the PDF Blob
+      const blob = await pdf(<ResumePDF data={data} />).toBlob();
+
+      // 2. Create an object URL for the Blob
+      const url = URL.createObjectURL(blob);
+
+      // 3. Create a temporary anchor element to trigger the download
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${data.fullName.replace(/\s+/g, '_')}_Resume.pdf`;
+
+      // 4. Append to body, click, and clean up
+      document.body.appendChild(link);
+      link.click();
+
+      // Small delay to ensure the browser registers the click before cleanup
+      setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 100);
+
+      console.log("PDF generated successfully!");
+    } catch (error) {
+      console.error("Failed to generate PDF:", error);
+    }
   }
 
   return (
@@ -265,9 +308,10 @@ export function FormWizard() {
             onClick={handleBack}
             disabled={isFirstStep}
           >
+            <ArrowLeftIcon size={18} weight="bold" />
             Voltar
           </Button>
-          <Button type="button" onClick={handleNext}>
+          <Button hidden={isLastStep} type="button" onClick={handleNext}>
             {isLastStep ? "Gerar currículo" : "Próximo"}
           </Button>
         </div>

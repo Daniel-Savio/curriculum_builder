@@ -100,7 +100,7 @@ export function StepIndicator({
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.2 }}
                   className={[
-                    "h-1.5 w-6 rounded-full transition-colors",
+                    "h-1.5 size-2 rounded-full transition-colors",
                     DASH_CLASSES[dashState],
                   ].join(" ")}
                 />
