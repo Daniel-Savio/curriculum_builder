@@ -37,7 +37,7 @@ export function StepPersonalInfo() {
           id="city"
           {...register("city")}
           placeholder="Ex: São Paulo"
-          value={""}
+
         />
         {errors.city && (
           <p className="text-sm text-destructive">{errors.city.message}</p>

@@ -26,6 +26,7 @@ import { pdf } from "@react-pdf/renderer";
 import { ResumePDF } from "@/pdf/pdf-resume";
 
 
+
 type Step = {
   id: string;
   title: string;
@@ -170,12 +171,12 @@ export function FormWizard() {
     {
       id: "end",
       title: "Concluir",
-      description: "Parabén, agora já temos o suficiente para gerar seu currículo!!!.",
+      description: "Parabéns, agora já temos o suficiente para gerar seu currículo!!!",
       fields: [],
       showInIndicator: true,
       Component: () => (
         <StepIntro
-        icon={<ArticleMediumIcon size={32} weight="bold"/>}
+          icon={<ArticleMediumIcon size={32} weight="bold" />}
           points={[]}
           cta={{ label: "Gerar currículo", onClick: () => handleNext() }}
         />
@@ -276,32 +277,50 @@ export function FormWizard() {
     <FormProvider {...methods}>
       <section
         id="questions-form"
-        className="relative w-full max-w-2xl rounded-2xl border border-border bg-card shadow-md p-6 sm:p-8"
+        // 1. Removed `justify-center` so elements anchor properly to the top and bottom.
+        // 2. Used a constrained height (e.g., h-[80vh] or max-h-[800px]) to force the scrollbar to appear inside.
+        className="relative flex flex-col w-full max-w-2xl h-[80vh] max-h-[800px] min-h-[500px] mt-16 rounded-2xl border border-border bg-card shadow-md p-6 sm:p-8"
       >
-        <StepIndicator
-          sections={sections}
-          currentStepIndex={stepIndex}
-          onNavigate={handleStepByIndex}
-        />
+        {/* HEADER: Step Indicator (Fixed at the top) */}
+        <div className="shrink-0">
+          <StepIndicator
+            sections={sections}
+            currentStepIndex={stepIndex}
+            onNavigate={handleStepByIndex}
+          />
+        </div>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentStep.id}
-            initial={{ opacity: 0, x: 16 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -16 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
-          >
-            <h2 className="text-2xl font-bold text-zinc-800 mb-1">
-              {currentStep.title}
-            </h2>
-            <p className="text-zinc-600 mb-6">{currentStep.description}</p>
-            { }
-            <StepComponent />
-          </motion.div>
-        </AnimatePresence>
+        {/* BODY: Takes up all available vertical space */}
+        {/* min-h-0 is crucial here, otherwise flex children will stretch beyond the container */}
+        <div className="flex-1 flex flex-col min-h-0 mt-6">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep.id}
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -16 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="flex-1 flex flex-col min-h-0"
+            >
+              {/* Title & Description (Fixed above the scrollable area) */}
+              <div className="shrink-0">
+                <h2 className="text-2xl font-bold text-zinc-800 mb-1">
+                  {currentStep.title}
+                </h2>
+                <p className="text-zinc-600 mb-4">{currentStep.description}</p>
+              </div>
 
-        <div className="flex justify-between mt-8">
+              {/* Step Component (Scrollable Area) */}
+              {/* Added overflow-y-auto so only the inputs scroll */}
+              <div className="flex-1 overflow-y-auto pr-2 pb-4">
+                <StepComponent />
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* FOOTER: Buttons (Fixed at the bottom) */}
+        <div className="shrink-0 flex justify-between pt-4 mt-2 border-t border-zinc-100">
           <Button
             type="button"
             variant="ghost"

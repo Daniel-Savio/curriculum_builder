@@ -80,7 +80,7 @@ export function StepEducation() {
 
   function handleCopyLastEducation() {
     const educations = getValues("educations");
-    const lastEducation = educations[educations.length - 1];
+    const lastEducation = educations![educations!.length - 1];
     if (!lastEducation) return;
 
     append({
@@ -224,7 +224,7 @@ function EducationEntryFields({
 
   const isCourse = courseType === "Curso";
   const hasNoAreaField = (COURSE_TYPES_WITHOUT_AREA as readonly string[]).includes(
-    courseType,
+    courseType!,
   );
   const entryErrors = errors.educations?.[index];
 
@@ -263,7 +263,7 @@ function EducationEntryFields({
 
   return (
     <div className="rounded-xl relative border border-border bg-muted/40 p-4 flex flex-col gap-4">
-      <span className="absolute flex -top-3 -right-2 p-2 size-6 text-center items-center rounded-full  bg-primary  text-zinc-50">
+      <span className="absolute flex -right-2 p-2 size-6 text-center items-center rounded-full  bg-primary  text-zinc-50">
         {index + 1}
       </span>
       <div className="flex items-start justify-between relative gap-2">

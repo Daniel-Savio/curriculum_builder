@@ -310,7 +310,7 @@ export function createEmptyResume(): ResumeFormData {
     // Personal Info & Contact
     fullName: "",
     role: "",
-    city: "",
+    city: "Piracaia",
     birthDate: "",
     email: "",
     phone: "",

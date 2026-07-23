@@ -234,7 +234,7 @@ function ExperienceEntryFields({
 
   return (
     <div className="rounded-xl relative border border-border bg-muted/40 p-4 flex flex-col gap-4">
-      <span className="absolute flex -top-3 p-2 size-6 text-center items-center rounded-full -right-1 bg-primary  text-zinc-50">
+      <span className="absolute flex p-2 size-6 text-center items-center rounded-full -right-1 bg-primary  text-zinc-50">
         {index + 1}
       </span>
       <div className="flex items-start justify-between gap-2">
