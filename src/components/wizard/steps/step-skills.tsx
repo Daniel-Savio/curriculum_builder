@@ -49,20 +49,8 @@ export function StepSkills() {
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -24 }}
         transition={{ duration: 0.2, ease: "easeOut" }}
-        className="flex flex-col py-4 gap-4 max-h-80 max-w-135 overflow-y-auto"
+        className="flex flex-col py-4 gap-4 max-w-135"
       >
-        <div className="flex gap-2 self-start">
-          <Button
-            type="button"
-            variant="outline"
-            className="gap-2"
-            onClick={handleAddSkill}
-          >
-            <PlusIcon size={18} weight="bold" />
-            Adicionar habilidade
-          </Button>
-        </div>
-
         {fields.length === 0 && (
           <div className="">
             <SkillExemple />
@@ -81,6 +69,18 @@ export function StepSkills() {
             />
           ))}
         </AnimatePresence>
+
+        <div className="flex gap-2 self-start">
+          <Button
+            type="button"
+            variant="outline"
+            className="gap-2"
+            onClick={handleAddSkill}
+          >
+            <PlusIcon size={18} weight="bold" />
+            Adicionar habilidade
+          </Button>
+        </div>
       </motion.div>
 
       {errors.experiences?.root && (

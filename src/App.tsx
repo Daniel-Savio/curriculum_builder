@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Header } from "@/components/header";
 import { FormWizard } from "@/components/wizard/form-wizard";
+import { EasyFormWizard } from "@/components/easy-wizard/easy-form-wizard";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,7 +11,10 @@ import {
   ShieldCheck,
   MagicWand,
   ArrowRight,
+  Hand,
 } from "@phosphor-icons/react";
+
+type Mode = "landing" | "advanced" | "easy";
 
 // A reusable component for the feature cards
 const FeatureCard = ({
@@ -41,8 +45,8 @@ const FeatureCard = ({
 );
 
 export function App() {
-  // State to toggle between the Landing Page and the Form Wizard
-  const [isBuilding, setIsBuilding] = useState(false);
+  // State to toggle between the Landing Page and the two Form Wizards
+  const [mode, setMode] = useState<Mode>("landing");
 
   return (
     <div className="bg-background min-h-svh flex flex-col font-sans overflow-hidden">
@@ -50,7 +54,7 @@ export function App() {
       <ScrollArea className="flex-1 flex flex-col">
         <main className="flex flex-col items-center w-full">
           <AnimatePresence mode="wait">
-            {!isBuilding ? (
+            {mode === "landing" ? (
               <motion.div
                 key="landing"
                 initial={{ opacity: 0 }}
@@ -102,11 +106,11 @@ export function App() {
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.5, delay: 0.3 }}
-                    className="mt-4"
+                    className="mt-4 flex flex-col items-center gap-4"
                   >
                     <Button
                       size="lg"
-                      onClick={() => setIsBuilding(true)}
+                      onClick={() => setMode("advanced")}
                       className="group gap-2 text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all"
                     >
                       Começar agora
@@ -116,6 +120,20 @@ export function App() {
                         className="group-hover:translate-x-1 transition-transform"
                       />
                     </Button>
+
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      onClick={() => setMode("easy")}
+                      className="group gap-2 text-lg px-8 py-6 rounded-full"
+                    >
+                      <Hand size={20} weight="bold" />
+                      Prefiro um formulário mais simples
+                    </Button>
+                    <p className="text-zinc-500 text-sm max-w-sm">
+                      Ideal se você tem menos prática com computador ou está
+                      preenchendo com a ajuda de alguém.
+                    </p>
                   </motion.div>
                 </section>
 
@@ -156,11 +174,15 @@ export function App() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4, ease: "easeOut" }}
-                className="w-full h-full flex flex-col items-center px-0 sm:px-4 py-0 sm:py-10 flex-1"
+                className="w-full h-full flex flex-col items-center px-0 sm:px-4 pt-6 sm:py-10 flex-1"
               >
                 {/* We pass a full width/height container here so the Wizard can stretch */}
                 <div className="w-full h-full max-w-3xl flex-1 flex flex-col">
-                  <FormWizard />
+                  {mode === "advanced" ? (
+                    <FormWizard onExit={() => setMode("landing")} />
+                  ) : (
+                    <EasyFormWizard onExit={() => setMode("landing")} />
+                  )}
                 </div>
               </motion.div>
             )}

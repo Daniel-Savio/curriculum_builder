@@ -1,4 +1,6 @@
 import { motion } from "framer-motion";
+import type { StoreApi, UseBoundStore } from "zustand";
+import type { StepStore } from "@/stores/create-step-store";
 
 export type IndicatorSection = {
   // Índice REAL (dentro do array completo de steps) do step de introdução
@@ -11,9 +13,9 @@ export type IndicatorSection = {
 
 type StepIndicatorProps = {
   sections: IndicatorSection[];
-  // Índice REAL da etapa atual, dentro do array completo de steps.
-  currentStepIndex: number;
-  onNavigate: (index: number) => void;
+  // Store de navegação do wizard dono deste indicador — cada wizard tem o
+  // seu, então o indicador lê e muda a etapa direto nele.
+  useStepStore: UseBoundStore<StoreApi<StepStore>>;
 };
 
 type DashState = "done" | "active" | "pending";
@@ -55,11 +57,10 @@ const DASH_CLASSES: Record<DashState, string> = {
   pending: "bg-zinc-300",
 };
 
-export function StepIndicator({
-  sections,
-  currentStepIndex,
-  onNavigate,
-}: StepIndicatorProps) {
+export function StepIndicator({ sections, useStepStore }: StepIndicatorProps) {
+  const currentStepIndex = useStepStore((s) => s.stepIndex);
+  const setStepIndex = useStepStore((s) => s.setStepIndex);
+
   // Qual seção "contém" a etapa atual — a última cujo introIndex já foi alcançado.
   const currentSectionIndex = sections.reduce(
     (acc, section, i) => (section.introIndex <= currentStepIndex ? i : acc),
@@ -77,7 +78,7 @@ export function StepIndicator({
               initial={false}
               animate={{ scale: sectionState === "active" ? 1.1 : 1 }}
               transition={{ duration: 0.2 }}
-              onClick={() => onNavigate(section.introIndex)}
+              onClick={() => setStepIndex(section.introIndex)}
               className={[
                 "cursor-pointer flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-bold shadow-md transition-colors",
                 CIRCLE_CLASSES[sectionState],

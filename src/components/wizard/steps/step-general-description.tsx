@@ -19,12 +19,12 @@ export function StepGeneralDescription() {
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -24 }}
         transition={{ duration: 0.2, ease: "easeOut" }}
-        className="flex flex-col py-4 gap-4 max-h-80 max-w-135 overflow-y-auto"
+        className="flex flex-col py-4 gap-4 max-w-135"
       >
         <Textarea
           {...register("generalDescription")}
           className="w-full"
-          rows={20}
+          rows={8}
           placeholder="Descreva sua experiência num geral"
         />
         {errors.generalDescription && <p className="text-red-500">{errors.generalDescription.message}</p>}

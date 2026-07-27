@@ -1,11 +1,12 @@
-import { useState, type ComponentType } from "react";
+import { useEffect, type ComponentType } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
 import { StepIndicator } from "./step-indicator";
+import { WizardNavButtons } from "./wizard-nav-buttons";
 import {
   createEmptyResume,
+  createFilledResume,
   //createEmptyExperience,
   //createEmptyEducation,
   resumeSchema,
@@ -16,7 +17,8 @@ import { StepContact } from "./steps/step-contact";
 import { StepExperience } from "./steps/step-experience";
 import { StepEducation } from "./steps/step-education";
 import { StepEducationDescriptions } from "./steps/step-education-description";
-import { ArrowLeftIcon, ArticleMediumIcon, GraduationCapIcon, ToolboxIcon, UserIcon } from "@phosphor-icons/react";
+import { ArticleMediumIcon, GraduationCapIcon, ToolboxIcon, UserIcon, XIcon } from "@phosphor-icons/react";
+import { Button } from "@/components/ui/button";
 import { SuitcaseIcon } from "@phosphor-icons/react/dist/ssr";
 import { StepExperienceDescriptions } from "./steps/step-experience-description";
 import { StepIntro } from "./steps/step-intro";
@@ -24,6 +26,7 @@ import { StepSkills } from "./steps/step-skills";
 import { StepGeneralDescription } from "./steps/step-general-description";
 import { pdf } from "@react-pdf/renderer";
 import { ResumePDF } from "@/pdf/pdf-resume";
+import { useResumeWizardStore } from "@/stores/resume-wizard-store";
 
 
 
@@ -38,8 +41,21 @@ type Step = {
 };
 
 
-export function FormWizard() {
-  const [stepIndex, setStepIndex] = useState(0);
+type FormWizardProps = {
+  onExit: () => void;
+};
+
+export function FormWizard({ onExit }: FormWizardProps) {
+  const stepIndex = useResumeWizardStore((s) => s.stepIndex);
+  const setStepIndex = useResumeWizardStore((s) => s.setStepIndex);
+  const next = useResumeWizardStore((s) => s.next);
+
+  // Sempre começa do zero ao montar — o store vive fora do componente, mas o
+  // formulário (react-hook-form) reseta a cada montagem, então a etapa
+  // precisa acompanhar.
+  useEffect(() => {
+    setStepIndex(0);
+  }, [setStepIndex]);
 
   const steps: Step[] = [
     {
@@ -52,7 +68,7 @@ export function FormWizard() {
       Component: () => (
         <StepIntro
           icon={<UserIcon size={28} weight="bold" />}
-          points={["Seu nome", "Objetivo ou cargo que deseja", "INformações para contato"]}
+          points={["Seu nome", "Objetivo ou cargo que deseja", "Informações para contato"]}
 
         />
       ),
@@ -191,7 +207,6 @@ export function FormWizard() {
   });
 
   const currentStep = steps[stepIndex];
-  const isFirstStep = stepIndex === 0;
   const isLastStep = stepIndex === steps.length - 1;
   const StepComponent = currentStep.Component;
 
@@ -219,28 +234,7 @@ export function FormWizard() {
       methods.handleSubmit(onSubmit)();
       return;
     }
-    setStepIndex((i) => i + 1);
-  }
-
-  function handleBack() {
-    setStepIndex((i) => Math.max(0, i - 1));
-  }
-
-  async function handleStepByIndex(targetIndex: number) {
-
-
-    // Voltar é sempre livre — não tem risco de pular validação.
-    if (targetIndex < stepIndex) {
-      setStepIndex(targetIndex);
-      return;
-    }
-
-    // Avançar clicando no indicador precisa da mesma validação do botão
-    // "Próximo", senão dá pra pular uma etapa com campo obrigatório vazio.
-    // const isStepValid = await methods.trigger(currentStep.fields);
-    // if (!isStepValid) return;
-
-    setStepIndex(targetIndex);
+    next(steps.length);
   }
 
   async function onSubmit(data: ResumeFormData) {
@@ -277,17 +271,28 @@ export function FormWizard() {
     <FormProvider {...methods}>
       <section
         id="questions-form"
-        // 1. Removed `justify-center` so elements anchor properly to the top and bottom.
-        // 2. Used a constrained height (e.g., h-[80vh] or max-h-[800px]) to force the scrollbar to appear inside.
-        className="relative flex flex-col w-full max-w-2xl h-[80vh] max-h-[800px] min-h-[500px] mt-16 rounded-2xl border border-border bg-card shadow-md p-6 sm:p-8"
+        // Mobile: full-bleed, fills the screen like a native step flow. Desktop:
+        // a card that hugs its content instead of forcing a fixed height —
+        // max-h only kicks in (with scroll) for steps with a lot of fields.
+        className="relative flex flex-col w-full sm:max-w-2xl min-h-[70dvh] sm:min-h-[420px] max-h-[92dvh] sm:max-h-[85dvh] sm:mt-16 rounded-none sm:rounded-2xl border-0 sm:border sm:border-border bg-card sm:shadow-md p-4 sm:p-8"
       >
+        {/* Sai do formulário e volta pra tela inicial */}
+        <div className="shrink-0 flex justify-end">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onExit}
+            className="gap-1.5 text-muted-foreground"
+          >
+            <XIcon size={16} weight="bold" />
+            Sair
+          </Button>
+        </div>
+
         {/* HEADER: Step Indicator (Fixed at the top) */}
         <div className="shrink-0">
-          <StepIndicator
-            sections={sections}
-            currentStepIndex={stepIndex}
-            onNavigate={handleStepByIndex}
-          />
+          <StepIndicator sections={sections} useStepStore={useResumeWizardStore} />
         </div>
 
         {/* BODY: Takes up all available vertical space */}
@@ -310,9 +315,11 @@ export function FormWizard() {
                 <p className="text-zinc-600 mb-4">{currentStep.description}</p>
               </div>
 
-              {/* Step Component (Scrollable Area) */}
-              {/* Added overflow-y-auto so only the inputs scroll */}
-              <div className="flex-1 overflow-y-auto pr-2 pb-4">
+              {/* Step Component — scrolls if it overflows, otherwise the single
+                  field/step sits centered instead of glued to the top.
+                  `safe center` falls back to top-aligned once content
+                  overflows, so buttons above the fold don't get hidden. */}
+              <div className="flex-1 overflow-y-auto pr-2 pb-4 flex flex-col [justify-content:safe_center]">
                 <StepComponent />
               </div>
             </motion.div>
@@ -320,20 +327,12 @@ export function FormWizard() {
         </div>
 
         {/* FOOTER: Buttons (Fixed at the bottom) */}
-        <div className="shrink-0 flex justify-between pt-4 mt-2 border-t border-zinc-100">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={handleBack}
-            disabled={isFirstStep}
-          >
-            <ArrowLeftIcon size={18} weight="bold" />
-            Voltar
-          </Button>
-          <Button hidden={isLastStep} type="button" onClick={handleNext}>
-            {isLastStep ? "Gerar currículo" : "Próximo"}
-          </Button>
-        </div>
+        <WizardNavButtons
+          useStepStore={useResumeWizardStore}
+          totalSteps={steps.length}
+          onNext={handleNext}
+          onFillSample={() => methods.reset(createFilledResume())}
+        />
       </section>
     </FormProvider>
   );
